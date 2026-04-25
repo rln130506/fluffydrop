@@ -18,7 +18,7 @@
   body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; }
 
   /* ADMIN */
-  #screen-admin { display:flex; flex-direction:column; align-items:center; min-height:100vh; }
+  #screen-admin { display:none; flex-direction:column; align-items:center; min-height:100vh; }
   #screen-client { display:none; flex-direction:column; align-items:center; min-height:100vh; }
   #screen-review { display:none; }
 
@@ -485,7 +485,7 @@
     const val = document.getElementById('pw-input').value;
     if(val === ADMIN_PW){
       sessionStorage.setItem('fd_auth','1');
-      document.getElementById('screen-pw').style.display='none';
+      hideAllScreens();
       document.getElementById('screen-admin').style.display='flex';
       loadDashboard();
     } else {
@@ -497,17 +497,25 @@
     }
   }
 
+  function hideAllScreens(){
+    ['screen-admin','screen-client','screen-review','screen-pw'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el) el.style.display='none';
+    });
+  }
+
   window.addEventListener('load',()=>{
+    hideAllScreens();
     const p=new URLSearchParams(window.location.search);
-    const fid=p.get('g'),name=p.get('n');
+    const fid=p.get('g'), name=p.get('n');
     if(fid){
-      // Client gallery link - no password needed
-      srcFolderId=fid;galName=name?decodeURIComponent(name):'';showClientScreen();
+      // ── CLIENT: has gallery param → show gallery directly, no password
+      srcFolderId=fid;
+      galName=name?decodeURIComponent(name):'';
+      showClientScreen();
     } else {
-      // Admin dashboard - require password
-      document.getElementById('screen-admin').style.display='none';
+      // ── ADMIN: no gallery param → require password
       if(sessionStorage.getItem('fd_auth')==='1'){
-        // Already authenticated this session
         document.getElementById('screen-admin').style.display='flex';
         loadDashboard();
       } else {
